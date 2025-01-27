@@ -1,20 +1,42 @@
 import socket
 import threading
 
+# Lista per tenere traccia dei client connessi e i loro nickname
+clienti = {}
+
 def gestisci_client(socket_client, indirizzo):
     ciclo = True
-    while ciclo:
-        try:
-            # Riceve il messaggio dal client
-            messaggio = socket_client.recv(1024).decode('utf-8')
-            if messaggio == "QUIT":
+    nickname = ""
+    try:
+        # Riceve il nickname del client
+        socket_client.send("Inserisci il tuo nickname: ".encode('utf-8'))
+        nickname = socket_client.recv(1024).decode('utf-8').strip()
+        clienti[socket_client] = nickname
+        print(f"{indirizzo} ha impostato il nickname su {nickname}")
+        
+        while ciclo:
+            try:
+                # Riceve il messaggio dal client
+                messaggio = socket_client.recv(1024).decode('utf-8').strip()
+                if messaggio.upper() == "QUIT":
+                    ciclo = False
+                elif messaggio.upper() in ["L", "LIST"]:
+                    # Invia la lista degli utenti connessi
+                    lista_utenti = ", ".join(clienti.values())
+                    socket_client.send(f"Utenti connessi: {lista_utenti}".encode('utf-8'))
+                else:
+                    print(f"Ricevuto da {nickname}: {messaggio}")
+                    # Invia una conferma al client
+                    socket_client.send("Messaggio ricevuto".encode('utf-8'))
+            except:
                 ciclo = False
-            print(f"Ricevuto {indirizzo}: {messaggio}")
-            # Invia una conferma al client
-            socket_client.send(f"Messaggio ricevuto".encode('utf-8'))
-        except:
-            ciclo = False
-    socket_client.close()
+    except:
+        pass
+    finally:
+        socket_client.close()
+        if socket_client in clienti:
+            print(f"{clienti[socket_client]} si è disconnesso.")
+            del clienti[socket_client]
 
 def main():
     # Crea un socket per il server
