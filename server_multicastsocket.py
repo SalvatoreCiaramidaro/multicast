@@ -1,7 +1,7 @@
 import socket
 import threading
 
-# Lista per tenere traccia dei client connessi e i loro nickname
+# Dizionario per tenere traccia dei client connessi e i loro nickname
 clienti = {}
 
 def gestisci_client(socket_client, indirizzo):
