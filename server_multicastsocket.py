@@ -3,16 +3,26 @@ import threading
 
 # Dizionario per tenere traccia dei client connessi e i loro nickname
 clienti = {}
+# Dizionario per mappare gli indirizzi IP ai nickname
+ip_nickname = {}
 
 def gestisci_client(socket_client, indirizzo):
     ciclo = True
     nickname = ""
+    client_ip = indirizzo[0]
     try:
-        # Riceve il nickname del client
-        socket_client.send("Inserisci il tuo nickname: ".encode('utf-8'))
-        nickname = socket_client.recv(1024).decode('utf-8').strip()
-        clienti[socket_client] = nickname
-        print(f"{indirizzo} ha impostato il nickname su {nickname}")
+        if client_ip in ip_nickname:
+            nickname = ip_nickname[client_ip]
+            socket_client.send(f"Ben tornato, {nickname}! Inserisci il tuo messaggio: ".encode('utf-8'))
+            clienti[socket_client] = nickname
+            print(f"{indirizzo} ha riconnesso il nickname {nickname}")
+        else:
+            # Riceve il nickname del client
+            socket_client.send("Inserisci il tuo nickname: ".encode('utf-8'))
+            nickname = socket_client.recv(1024).decode('utf-8').strip()
+            ip_nickname[client_ip] = nickname
+            clienti[socket_client] = nickname
+            print(f"{indirizzo} ha impostato il nickname su {nickname}")
         
         while ciclo:
             try:
@@ -44,7 +54,7 @@ def main():
     # Associa il socket all'indirizzo e alla porta
     server.bind(('0.0.0.0', 5000))
     # Il server inizia ad ascoltare le connessioni in arrivo
-    server.listen(2)
+    server.listen(5)
     server_ip = socket.gethostbyname(socket.gethostname())
     print(f"Server in ascolto su {server_ip} sulla porta 5000")
 

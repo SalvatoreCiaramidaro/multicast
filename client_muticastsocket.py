@@ -8,10 +8,13 @@ def main():
     # Connette il client al server
     client.connect((server_ip, 5000))
 
-    # Riceve il prompt del server per il nickname
+    # Riceve il primo messaggio dal server
     prompt = client.recv(1024).decode('utf-8')
-    nickname = input(prompt)
-    client.send(nickname.encode('utf-8'))
+    if "Ben tornato" in prompt:
+        print(prompt)
+    else:
+        nickname = input(prompt)
+        client.send(nickname.encode('utf-8'))
 
     ciclo = True
 
